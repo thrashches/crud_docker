@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  backend:
+    build: .
+    command: gunicorn --workers 3 --bind 0.0.0.0:8000 stocks_products.wsgi:application
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./static:/crud/static
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - postgres
+  nginx:
+    build: ./nginx
+    ports:
+      - 80:80
+    depends_on:
+      - backend
+    volumes:
+      - ./static:/usr/share/nginx/html/static
